@@ -23,7 +23,7 @@ namespace TeensyStep{
         bool isOk() const { return OK; }
         bool isRunning() const;
         bool isAllocated() const;
-        int getCurrentSpeed() const;
+        int getCurrentSpeed();
 
         void emergencyStop() { timerField.end(); }
 
@@ -87,7 +87,7 @@ namespace TeensyStep{
     }
 
     template <typename t>
-    int MotorControlBase<t>::getCurrentSpeed() const
+    int MotorControlBase<t>::getCurrentSpeed()
     {
         return timerField.getStepFrequency();
     }
