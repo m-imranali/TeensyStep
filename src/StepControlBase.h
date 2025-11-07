@@ -31,7 +31,7 @@ namespace TeensyStep
         void moveAsync(Stepper* (&steppers)[N]) { moveAsync(1.0f, steppers); }
 
         // non blocking stop command
-        void stopAsync();
+        void stopAsync(u_int16_t timeToStopMs = 0);
 
         // Blocking movements ----------------------------------------------
 
@@ -150,11 +150,11 @@ namespace TeensyStep
     }
 
     template <typename a, typename t>
-    void StepControlBase<a, t>::stopAsync()
+    void StepControlBase<a, t>::stopAsync(u_int16_t timeToStopMs)
     {
         if (this->isRunning())
         {
-            uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current);
+            uint32_t newTarget = accelerator.initiateStopping(this->leadMotor->current, timeToStopMs);
             this->leadMotor->target = this->leadMotor->current + this->leadMotor->dir * newTarget;
 
             if (this->leadMotor->target == this->leadMotor->current) this->timerField.end();

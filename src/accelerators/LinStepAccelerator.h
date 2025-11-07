@@ -9,7 +9,7 @@ class LinStepAccelerator
  public:
     inline int32_t prepareMovement(int32_t currentPos, int32_t targetPos, uint32_t targetSpeed, uint32_t pullInSpeed, uint32_t pullOutSpeed, uint32_t a);
     inline int32_t updateSpeed(int32_t currentPosition);
-    inline uint32_t initiateStopping(int32_t currentPosition);
+    inline uint32_t initiateStopping(int32_t currentPosition, uint16_t timeToStopMs = 0);
     inline void overrideSpeed(float fac, int32_t currentPosition);
 
     LinStepAccelerator() = default;
@@ -120,9 +120,27 @@ int32_t LinStepAccelerator::updateSpeed(int32_t curPos)
     return 0;
 }
 
-uint32_t LinStepAccelerator::initiateStopping(int32_t curPos)
+uint32_t LinStepAccelerator::initiateStopping(int32_t curPos, uint16_t timeToStopMs)
 {
     int32_t stepsDone = std::abs(s_0 - curPos);
+
+    // Quick stop: Stop the motor within provided time with whatever deceleration is needed based on current speed and return steps to stop
+    if (timeToStopMs > 0)
+    {
+        int32_t currentSpeed = updateSpeed(curPos);
+        uint32_t newTwo_a = std::abs(currentSpeed) * 1000 * 2 / timeToStopMs;
+        if (stepsDone > decStart && newTwo_a < two_a) // already decelerating and the decleration is sufficient to stop in time
+        {
+            return ds - stepsDone;
+        }
+
+        two_a = newTwo_a;
+        ve_sqr = 0;
+        accEnd = decStart = 0;
+        int32_t stepsToStop = (int32_t)( (int64_t)currentSpeed * currentSpeed / two_a );
+        ds = stepsDone + stepsToStop;
+        return stepsToStop;
+    }
 
     if (stepsDone < accEnd)                // still accelerating
     {                                      //
